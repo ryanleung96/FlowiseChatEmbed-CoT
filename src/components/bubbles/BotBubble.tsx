@@ -201,7 +201,18 @@ export const BotBubble = (props: Props) => {
 
   onMount(() => {
     if (botMessageEl) {
-      botMessageEl.innerHTML = Marked.parse(props.message.message);
+      // Process the <think> TAG before passing to Markdown
+      const thinkPattern = /<think>([\s\S]*?)<\/think>/g;
+      const processedMessage = props.message.message.replace(thinkPattern, (match, content) => {
+        let quotedLines = "_Thoughts_ \n";
+        quotedLines = quotedLines + content
+          .split('\n\n')
+          .map((line: string) => (line.trim() ? `> ${line}` : ''))
+          .join('\n\n');
+        return quotedLines;
+      });
+      // botMessageEl.innerHTML = Marked.parse(props.message.message);
+      botMessageEl.innerHTML = Marked.parse(processedMessage);
       botMessageEl.querySelectorAll('a').forEach((link) => {
         link.target = '_blank';
       });
